@@ -1,5 +1,5 @@
 angular.module('AngularApp')
-    .controller('ListAController', ['$timeout', 'ItemStorage', function($timeout, ItemStorage) {
+    .controller('ListAController', ['$timeout', 'ItemStorage', '$scope', function($timeout, ItemStorage, $scope) {
 
         var ctrl = this;
         ctrl.list = ItemStorage.listA;
@@ -8,15 +8,20 @@ angular.module('AngularApp')
         });
         ctrl.newEntry = "";
         ctrl.message = "";
+
         ctrl.toggle = function(index) {
-            var item = ctrl.list[index];
-            ItemStorage.removeFromListA(item).then(function(response){
-                ItemStorage.addToListB(item);
-                ItemStorage.getListA().then(function(data){
-                    ctrl.list = data;
+            var toggler = this;
+            this.item = ctrl.list[index];
+            ItemStorage.removeFromListA(toggler.item).then(function(response){
+                ItemStorage.getListA().then(function(response){
+                    ctrl.list = response;
+                    toggler.item.list = 2;
+                    ItemStorage.addToListB(toggler.item).then(function(response){
+                    }, function(error){
+                        console.log(error);
+                    });
                 });
             });
-
         };
 
         this.addEntry = function() {
@@ -27,7 +32,6 @@ angular.module('AngularApp')
             var success = ItemStorage.addToListA(newItem).then(function(response){
                 ItemStorage.getListA().then(function(data){
                     ctrl.list = data;
-                //    console.log(ctrl.list);
                     ctrl.message = "success";
                 });
             }, function(response){
@@ -35,7 +39,6 @@ angular.module('AngularApp')
             });
 
             ctrl.newEntry = "";
-
             $timeout(function() {
                 ctrl.message = " ";
             }, 2000);
